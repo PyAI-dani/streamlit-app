@@ -1,0 +1,93 @@
+import mysql.connector
+
+config = {
+    'user': 'root',
+    'password': 'mysql1234',
+    'host': 'localhost',
+    'database': 'barobon_db',
+}
+
+
+def insert_departmental(job_title, people, day, created_at):
+    try:
+        connection = mysql.connector.connect(**config)
+        if connection.is_connected():
+            cursor = connection.cursor()
+            insert_query = """
+            INSERT INTO departmental (job_title, people, day, created_at)
+            VALUES (%s, %s, %s, %s)
+            """
+            values = (job_title, people, day, created_at)
+            cursor.execute(insert_query, values)
+            connection.commit()
+            print(f'report inserted successfully: {job_title}, {people}, {day}, {created_at}')
+    except mysql.connector.Error as err:
+        print(f"خطا در اتصال یا درج داده: {err}")
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+
+# ======================================================================================================================
+
+def insert_user_info(cid, name, username):
+    try:
+        connection = mysql.connector.connect(**config)
+
+        if connection.is_connected():
+            cursor = connection.cursor()
+
+            sql_insert_query = """
+            INSERT INTO user_info (cid, name, usename)
+            VALUES (%s, %s, %s)
+            ON DUPLICATE KEY UPDATE name=%s, usename=%s
+            """
+            values = (cid, name, username, name, username)
+
+            cursor.execute(sql_insert_query, values)
+            connection.commit()
+
+            print(f'User added or updated successfully: cid={cid}, name={name}, username={username}')
+
+    except mysql.connector.Error as err:
+        print(f"خطا در اتصال یا درج داده: {err}")
+
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+
+
+# ======================================================================================================================
+
+def display_departmental_data():
+    try:
+        connection = mysql.connector.connect(**config)
+
+        if connection.is_connected():
+            cursor = connection.cursor()
+
+            # اجرای کوئری برای انتخاب همه‌ی داده‌ها از جدول
+            select_query = "SELECT * FROM departmental"
+            cursor.execute(select_query)
+
+            # دریافت تمام رکوردها
+            result = cursor.fetchall()
+
+            # بررسی اینکه آیا رکوردی وجود دارد
+            if result:
+                print("داده‌های موجود در جدول departmental:")
+                for row in result:
+                    print(f"Job Title: {row[0]}, People: {row[1]}, Day: {row[2]}, Created At: {row[3]}")
+            else:
+                print("هیچ رکوردی در جدول departmental یافت نشد.")
+    except mysql.connector.Error as err:
+        print(f"خطا در اتصال یا خواندن داده‌ها: {err}")
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+display_departmental_data()
